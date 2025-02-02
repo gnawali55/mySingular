@@ -4,34 +4,7 @@
 
 
 
-lists pOLY_List(poly f0) 
-{
-    if (f0 == NULL) return NULL; // Handle NULL input
 
-    int r = pLength(f0);
-    lists S = (lists)omAlloc0Bin(slists_bin);
-    S->Init(r);
-
-    for (int k = 0; k < r; k++) 
-    {
-        S->m[k].rtyp = POLY_CMD;  // Ensure correct type
-
-        poly headTerm = pHead(f0);
-        if (headTerm != NULL) 
-        {
-            S->m[k].data = (void*) p_Copy(headTerm, currRing); // Deep copy
-        } 
-        else 
-        {
-            std::cout << "Warning: pHead(f0) returned NULL at index " << k << std::endl;
-        }
-
-        f0 = pNext(f0);
-        if (f0 == NULL) break;
-    }
-
-    return S;
-}
 
 
 matrix lcm_mod(ideal G) { //ideal G is Singular module
@@ -94,12 +67,15 @@ ideal leadSyz(ideal f) {
     int r = IDELEMS(f_copy);  // Number of elements in the ideal
     ideal L = idInit(0, 1);  // Initialize an empty ideal (syzygy module)
     matrix M = mpNew(r, r);  // Matrix to store LCM-based computations
-
+   for(int k=0; k<IDELEMS(f_copy);k++){
+      std::cout << "Generators" <<""<<k << ": " << pString((poly)f_copy->m[k]) << std::endl;
+    }
     // Fill the matrix M with LCM computations
     for (a = 0; a < r; a++) {
         for (b = 0; b < r; b++) {
             // Compute LCM of leading monomials of f[a] and f[b]
             poly lcm = p_Lcm(pHead(f_copy->m[b]), pHead(f_copy->m[a]), currRing);
+              std::cout << "  poly lcm:=" << pString(lcm) << std::endl;
             pSetCoeff0(lcm, nInit(1));  // Normalize the LCM (set coefficient to 1)
             MATELEM(M, a, b) = pp_Divide(lcm, pHead(f_copy->m[b]), currRing); // Store the quotient
         }
@@ -112,10 +88,11 @@ ideal leadSyz(ideal f) {
         for (j = 0; j < i; j++) {
             // Generate the initial syzygy candidate from matrix M
             poly t0 = pCopy(MATELEM(M, j, i));
+            std::cout << "MATELEM(M, j, i):=" << pString(MATELEM(M, j, i)) << std::endl;
             p_SetComp(t0, i + 1, currRing);  // Assign the component index
             p_SetmComp(t0, currRing);       // Normalize the component
             t = pCopy(t0);  // Copy t0 to t as the current syzygy candidate
-
+          std::cout << "t=m[j,i]*gen(i):=" << pString(t) << std::endl;
             // Check divisibility conditions for t against the elements in L
             for (k = 0; k < IDELEMS(L); k++) {
                 s = (poly)L->m[k];  // Retrieve the k-th generator of L
@@ -278,7 +255,9 @@ lists aLL_LEAD(ideal f) {
     lists J = (lists)omAlloc0Bin(slists_bin);
     J->Init(2); // Initialize the list with two elements
     ideal f_copy = f;
-    
+    //  for(int k=0; k<IDELEMS(f_copy);k++){
+    //   std::cout << "Generators" <<""<<k << ": " << pString((poly)f_copy->m[k]) << std::endl;
+    // }
     // Initialize the first two elements
     J->m[0].rtyp = IDEAL_CMD;  
     J->m[0].data = f_copy;          
