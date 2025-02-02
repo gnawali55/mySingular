@@ -1,0 +1,7 @@
+/home/santosh/mySingular/my_singular/simple_singular/build_dir/CMakeFiles/simple_singular.dir
+/home/santosh/mySingular/my_singular/simple_singular/build_dir/CMakeFiles/edit_cache.dir
+/home/santosh/mySingular/my_singular/simple_singular/build_dir/CMakeFiles/rebuild_cache.dir
+/home/santosh/mySingular/my_singular/simple_singular/build_dir/CMakeFiles/list_install_components.dir
+/home/santosh/mySingular/my_singular/simple_singular/build_dir/CMakeFiles/install.dir
+/home/santosh/mySingular/my_singular/simple_singular/build_dir/CMakeFiles/install/local.dir
+/home/santosh/mySingular/my_singular/simple_singular/build_dir/CMakeFiles/install/strip.dir

@@ -1,0 +1,1 @@
+/home/santosh/mySingular/my_singular/simple_singular/install_dir/bin/simple_singular
