@@ -1,1 +1,1 @@
-This is purely for Singular C++
+This is purely for Singular C++ code for computing Schyerer's frame. 
