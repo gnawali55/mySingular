@@ -12,10 +12,9 @@ export SINGULAR_INSTALL_DIR
 # Navigate to the directory containing the built executable
 cd /home/santosh/mySingular/my_singular/simple_singular/install_dir/bin
 
-# Run the executable
-
-./simple_singular
-# gdb ./simple_singular
-# run
-# bt  # Get backtrace when it crashes
-
+# Run the executable with Valgrind for memory checking
+echo "Running the program with Valgrind..."
+valgrind --main-stacksize=16384 --tool=memcheck --leak-check=full --track-origins=yes --verbose ./simple_singular
+# valgrind  --leak-check=full --show-leak-kinds=all ./simple_singular
+gdb ./simple_singular
+run

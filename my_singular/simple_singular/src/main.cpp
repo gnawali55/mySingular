@@ -15,9 +15,17 @@ matrix lcm_mod(ideal G) { //ideal G is Singular module
     int j=0;
     ideal G_copy=idCopy(G);
     int r = IDELEMS(G_copy);
+    for(int k=0; k<r; k++){
+        std::cout<<"ideal G:"<<pString((poly)G->m[k])<<std::endl;
+    }
+      std::cout << "r in lcm_mod:= " << r << " "<<std::endl;
+      omUpdateInfo();
+      std::cout<<"used mem:"<<om_Info.UsedBytes<<std::endl;
     matrix l=mpNew(r,r);
+
+       std::cout<<"pointer l:"<<(long)l<<std::endl;
       std::cout << "Row of l " << MATROWS(l) << " "<<std::endl;
-          std::cout << "Cols of l " << MATCOLS(l) << " "<<std::endl;
+      std::cout << "Cols of l " << MATCOLS(l) << " "<<std::endl;
     poly s10=NULL;
     poly t10=NULL;
 
@@ -57,7 +65,8 @@ matrix lcm_mod(ideal G) { //ideal G is Singular module
                 //  std::cout << "m[a,b] in lcm_mod: " << pString(MATELEM(l, a+1, b+1)) << std::endl;
             }
         }
-    }
+    }  p_Delete(&s10, currRing);
+     p_Delete(&t10, currRing);
     
 
     return l;
@@ -251,6 +260,7 @@ ideal Sec_leadSyz(ideal f0) {
             } 
         }
     }
+    idDelete((ideal*)&M);
 
       //  Debug output
     std::cout << "Final second-Leadsyz  size: " << IDELEMS(L) << std::endl;
@@ -275,11 +285,11 @@ lists aLL_LEAD(ideal f) {
     // Initialize the first two elements
     J->m[0].rtyp = IDEAL_CMD;  
     J->m[0].data = f_copy;          
-    
+   
     int n = rVar(currRing); // Get the number of variables in the current ring
     ideal F = leadSyz(f_copy);
     int g=IDELEMS(F);
-   
+    idDelete(&f);
     // for(int k=0; k<g;k++){
     //   std::cout << "First_LeadSyz :at" <<""<<k << ": " << pString((poly)F->m[k]) << std::endl;
     // }
@@ -377,102 +387,95 @@ lists aLL_LEAD(ideal f) {
 int main() {
     siInit((char *)"/home/santosh/singular-gpispace/spack/opt/spack/linux-ubuntu22.04-skylake/gcc-11.4.0/singular-4.4.0p2-syrkttc4im2j3tzob5jykruuxnushksj/lib/libSingular.so");
 
-    // Define the variables
-    char **n = (char**)omalloc(4 * sizeof(char*));
-    n[0] = omStrDup("w");
-    n[1] = omStrDup("x");
-    n[2] = omStrDup("y");
-    n[3] = omStrDup("z");
+    // // Define the variables
+    // char **n = (char**)omalloc(4 * sizeof(char*));
+    // n[0] = omStrDup("w");
+    // n[1] = omStrDup("x");
+    // n[2] = omStrDup("y");
+    // n[3] = omStrDup("z");
+    // // n[] = omStrDup("z");
+    // rRingOrder_t* order=(rRingOrder_t*)omAlloc0(3*sizeof(rRingOrder_t));
+    // order[0]=ringorder_dp;
+    // order[1]=ringorder_c;
+    // int* block0=(int*)omAlloc(3*sizeof(int));
+    // block0[0]=1;
+    // int* block1=(int*)omAlloc0(3*sizeof(int));
+    // block1[0]=4;
 
-    rRingOrder_t* order=(rRingOrder_t*)omAlloc0(3*sizeof(rRingOrder_t));
+    // // Define the ring (dp,c) ordering
+    // ring R = rDefault(0, 4, n,3,order,block0,block1);  // 0 means coefficient field is ℚ
+    // rChangeCurrRing(R);
+
+
+char **n = (char**)omalloc(5 * sizeof(char*)); // Allocate space for 5 variables
+n[0] = omStrDup("w");
+n[1] = omStrDup("x");
+n[2] = omStrDup("y");
+n[3] = omStrDup("z");
+n[4] = omStrDup("u"); // Add the new variable "u"
+
+ rRingOrder_t* order=(rRingOrder_t*)omAlloc0(3*sizeof(rRingOrder_t));
     order[0]=ringorder_dp;
     order[1]=ringorder_c;
     int* block0=(int*)omAlloc(3*sizeof(int));
     block0[0]=1;
     int* block1=(int*)omAlloc0(3*sizeof(int));
-    block1[0]=4;
+    block1[0]=5;
 
-    // Define the ring (dp,c) ordering
-    ring R = rDefault(0, 4, n,3,order,block0,block1);  // 0 means coefficient field is ℚ
-    rChangeCurrRing(R);
+// Define the ring (dp,c) ordering with 5 variables
+ring R = rDefault(0, 5, n, 3, order, block0, block1);  // Now using 5 instead of 4
+
+
+rChangeCurrRing(R);
+
+
+
+
     // Define the polynomials for the ideal
     poly f1 = p_ISet(1, R);
-    pSetExp(f1, 1, 2); // w^2
+    pSetExp(f1, 1, 1); // w
 
     pSetm(f1);
     
 
-   // Create the polynomial -1 x*z
-  poly p2 = p_ISet(-1, R);
-  pSetExp(p2, 2, 1);
-  pSetExp(p2, 4, 1);
  
-  pSetm(p2);
-
-   f1 = p_Add_q(f1, p2, R);
-  p2 = NULL;
-  pWrite(f1); //w^2-x*z
+  pWrite(f1); 
+   
 
 
 
 // Define f2 = w*x - y*z
 poly f2 = p_ISet(1, R);
-pSetExp(f2, 1, 1); // w
 pSetExp(f2, 2, 1); // x
+
 pSetm(f2);
 
-poly p3 = p_ISet(-1, R); // -y*z
-pSetExp(p3, 3, 1); // y
-pSetExp(p3, 4, 1); // z
-pSetm(p3);
 
-f2 = p_Add_q(f2, p3, R);
- p3 = NULL;
 pWrite(f2);
 printf("\n");
 
 // Define f3 = x^2 - w*y
 poly f3 = p_ISet(1, R);
-pSetExp(f3, 2, 2); // x^2
+pSetExp(f3, 3, 1); // y
 pSetm(f3);
 
-poly p4 = p_ISet(-1, R); // -w*y
-pSetExp(p4, 1, 1); // w
-pSetExp(p4, 3, 1); // y
-pSetm(p4);
-
-f3 = p_Add_q(f3, p4, R);
- p4 = NULL;
 pWrite(f3);
 printf("\n");
 
-// Define f4 = x*y - z^2
+
 poly f4 = p_ISet(1, R);
-pSetExp(f4, 2, 1); // x
-pSetExp(f4, 3, 1); // y
+pSetExp(f4, 4, 1); // z
+
 pSetm(f4);
 
-poly p5 = p_ISet(-1, R); // -z^2
-pSetExp(p5, 4, 2); // z^2
-pSetm(p5);
-
-f4 = p_Add_q(f4, p5, R);
- p5 = NULL;
 pWrite(f4);
 printf("\n");
 
-// Define f5 = y^2 - w*z
 poly f5 = p_ISet(1, R);
-pSetExp(f5, 3, 2); // y^2
+pSetExp(f5, 5, 1); // z
+
 pSetm(f5);
 
-poly p6 = p_ISet(-1, R); // -w*z
-pSetExp(p6, 1, 1); // w
-pSetExp(p6, 4, 1); // z
-pSetm(p6);
-
-f5 = p_Add_q(f5, p6, R);
- p6 = NULL;
 pWrite(f5);
 printf("\n");
 
@@ -482,7 +485,7 @@ J->m[0] = f1;
 J->m[1] = f2;
 J->m[2] = f3;
 J->m[3] = f4;
-J->m[4] = f5;
+J->m[4]=f5;
 
 
 

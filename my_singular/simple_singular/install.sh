@@ -4,7 +4,7 @@
 set -e
 
 # Create necessary directories
-mkdir -p ~/mySingular/my_singular/simple_singular/build_dir ~/mySingular//my_singular/simple_singular/install_dir
+mkdir -p ~/mySingular/my_singular/simple_singular/build_dir ~/mySingular/my_singular/simple_singular/install_dir
 
 # Define variables
 INSTALL_PREFIX="/home/santosh/mySingular/my_singular/simple_singular/install_dir"
@@ -20,8 +20,6 @@ SINGULAR_INSTALL_DIR="/home/santosh/singular-gpispace/spack/opt/spack/linux-ubun
 export SINGULAR_INSTALL_DIR
 export LD_LIBRARY_PATH="$SINGULAR_INSTALL_DIR/lib:$LD_LIBRARY_PATH"
 
-
-
 # Remove old build directory and create a fresh one
 rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR"
@@ -34,3 +32,5 @@ cmake -D CMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" \
 
 # Build and install
 cmake --build "$BUILD_DIR" --target install -- -j "$(nproc)"
+
+echo "Installation completed successfully."

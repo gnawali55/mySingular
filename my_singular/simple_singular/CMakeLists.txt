@@ -23,6 +23,9 @@ message(STATUS "SINGULAR_LIBRARY_DIR: ${SINGULAR_LIBRARY_DIR}")
 # Include Singular headers
 include_directories(${SINGULAR_INCLUDE_DIRS})
 
+
+set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
+
 # Add executable
 add_executable(simple_singular src/main.cpp)
 
