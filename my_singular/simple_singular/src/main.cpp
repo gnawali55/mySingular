@@ -16,12 +16,15 @@ matrix lcm_mod(ideal G) { //ideal G is Singular module
     ideal G_copy=idCopy(G);
     int r = IDELEMS(G_copy);
     matrix l=mpNew(r,r);
+      std::cout << "Row of l " << MATROWS(l) << " "<<std::endl;
+          std::cout << "Cols of l " << MATCOLS(l) << " "<<std::endl;
     poly s10=NULL;
     poly t10=NULL;
-    for (a = 0; a < r; a++) {
-        for (b = 0; b < r; b++) {
-             //std::cout << "G->m[a]>: " << pString(G->m[a]) << std::endl;
-             //std::cout << "G->m[b]>: " << pString(G->m[b]) << std::endl;
+
+    for (a = 0; a <r; a++) {
+        for (b = 0; b <r; b++) {
+            //  std::cout << "G[" <<" " <<a<<" "<<"]:" << pString(G->m[a]) << std::endl;
+            //  std::cout << "G[" <<" " <<b<<" "<<"]:" << pString(G->m[b]) << std::endl;
            
             //i = leadexp(G[a])[nvars(basering) + 1];
             i= p_GetComp(G->m[a],currRing);
@@ -32,21 +35,26 @@ matrix lcm_mod(ideal G) { //ideal G is Singular module
             s10 = pHead(G->m[a]); //Should be leadmonomial
             pSetComp(s10,0);
             pSetmComp(s10);
+            //   std::cout << "G->m[a]>: " << pString(s10) << " " <<i<<std::endl;
             t10 = pHead(G->m[b]);//Should be leadmonomial
             pSetComp(t10,0);
             pSetmComp(t10);
+            //  std::cout << "G->m[b]>: " << pString(t10) << " "<<j<<std::endl;
             poly lcm_poly =  p_Lcm(s10, t10, currRing);
             pSetCoeff0(lcm_poly,nInit(1));
-
+            // std::cout << "poly lcm_poly: " << pString(lcm_poly) << std::endl;
             if (i == j) {
                // l[a, b] = lcm(leadmonomial(G[a]), leadmonomial(G[b])) / lead(t10);
-                
-                MATELEM(l, a, b) = pp_Divide(lcm_poly, t10, currRing);
-                //  std::cout << "m[a.b] in lcm_mod: " << pString(MATELEM(l, a, b)) << std::endl;
+                //  std::cout << "i==j: "<< std::endl;
+            //     std::cout << "G->m[a]>: " << pString(G->m[a]) << std::endl;
+            //  std::cout << "G->m[b]>: " << pString(G->m[b]) << std::endl;
+                MATELEM(l, a+1, b+1) = pp_Divide(lcm_poly, t10, currRing);
+                //  std::cout << "m[a,b] in lcm_mod: " << pString(MATELEM(l, a+1, b+1)) << std::endl;
 
             } else {
                 // If i is not equal to j, set l[a, b] to 0
-                MATELEM(l,a,b)= NULL;
+                MATELEM(l,a+1,b+1)= NULL;
+                //  std::cout << "m[a,b] in lcm_mod: " << pString(MATELEM(l, a+1, b+1)) << std::endl;
             }
         }
     }
@@ -67,16 +75,17 @@ ideal leadSyz(ideal f) {
     int r = IDELEMS(f_copy);  // Number of elements in the ideal
     ideal L = idInit(0, 1);  // Initialize an empty ideal (syzygy module)
     matrix M = mpNew(r, r);  // Matrix to store LCM-based computations
-   for(int k=0; k<IDELEMS(f_copy);k++){
-      std::cout << "Generators" <<""<<k << ": " << pString((poly)f_copy->m[k]) << std::endl;
-    }
+//    for(int k=0; k<IDELEMS(f_copy);k++){
+//       std::cout << "Generators" <<""<<k << ": " << pString((poly)f_copy->m[k]) << std::endl;
+//     }
     // Fill the matrix M with LCM computations
     for (a = 0; a < r; a++) {
         for (b = 0; b < r; b++) {
             // Compute LCM of leading monomials of f[a] and f[b]
             poly lcm = p_Lcm(pHead(f_copy->m[b]), pHead(f_copy->m[a]), currRing);
-              std::cout << "  poly lcm:=" << pString(lcm) << std::endl;
+             
             pSetCoeff0(lcm, nInit(1));  // Normalize the LCM (set coefficient to 1)
+            //  std::cout << "  poly lcm:=" << pString(lcm) << std::endl;
             MATELEM(M, a, b) = pp_Divide(lcm, pHead(f_copy->m[b]), currRing); // Store the quotient
         }
     }
@@ -88,11 +97,15 @@ ideal leadSyz(ideal f) {
         for (j = 0; j < i; j++) {
             // Generate the initial syzygy candidate from matrix M
             poly t0 = pCopy(MATELEM(M, j, i));
-            std::cout << "MATELEM(M, j, i):=" << pString(MATELEM(M, j, i)) << std::endl;
+            // std::cout << "MATELEM(M, j, i):=" << pString(MATELEM(M, j, i)) << std::endl;
             p_SetComp(t0, i + 1, currRing);  // Assign the component index
-            p_SetmComp(t0, currRing);       // Normalize the component
+            //  std::cout << "p_SetComp:=" <<p_SetComp(t0, i + 1, currRing)<< std::endl;
+             
+            p_SetmComp(t0, currRing);       // t=m[j,i]*gen(i)
+            //     std::cout << "t0:=" << pString(t0) << std::endl;
+            //  std::cout << "p_SetmComp:=" <<pString(t0)<< std::endl;
             t = pCopy(t0);  // Copy t0 to t as the current syzygy candidate
-          std::cout << "t=m[j,i]*gen(i):=" << pString(t) << std::endl;
+        //   std::cout << "t=m[j,i]*gen(i):=" << pString(t) << std::endl;
             // Check divisibility conditions for t against the elements in L
             for (k = 0; k < IDELEMS(L); k++) {
                 s = (poly)L->m[k];  // Retrieve the k-th generator of L
@@ -139,9 +152,9 @@ ideal leadSyz(ideal f) {
 
     // Debug output: Print the final size and contents of L
     std::cout << "Final first leadsyz size: " << IDELEMS(L) << std::endl;
-    for (int k = 0; k < cc; k++) {
-        std::cout << "Generator " << k << ": " << pString((poly)L->m[k]) << std::endl;
-    }
+    // for (int k = 0; k < cc; k++) {
+    //     std::cout << "Generator " << k << ": " << pString((poly)L->m[k]) << std::endl;
+    // }
 
  
 
@@ -158,18 +171,19 @@ ideal Sec_leadSyz(ideal f0) {
     poly s = NULL;  // Polynomial s is a singular vector
     poly t = NULL;  // Polynomial t is a singular vector
     int cc = 0; // Counter for elements in L
-    
+    //   std::cout << "r: " <<r<< std::endl;
     // Initialize ideal L with initial size 0
     ideal L = idInit(0, 1);
     ideal f_copy=idCopy(f0);
     // Create a matrix M using lcm_mod for the input ideal f0
     matrix M = lcm_mod(f_copy);  // Ensure lcm_mod returns a valid matrix
-
+       std::cout << "Row of M " << MATROWS(M) << " "<<std::endl;
+          std::cout << "Cols of M " << MATCOLS(M) << " "<<std::endl;
     // Loop through pairs (i, j) in the matrix
     for (int i = 1; i < r; i++) {
         for (int j = 0; j < i; j++) {
             // Fetch the matrix element at (j, i)
-            poly t0 = pCopy(MATELEM(M, j, i));
+            poly t0 = pCopy(MATELEM(M, j+1, i+1));
 
             if (t0!= NULL) {
                 // Set the component and multigrade component for t0
@@ -178,7 +192,7 @@ ideal Sec_leadSyz(ideal f0) {
 
                 // Copy t0 into t
                 t = pCopy(t0);  
-                 std::cout << "t=m[j,i]*gen(i):=" << pString(t) << std::endl;
+                //  std::cout << "t=m[j,i]*gen(i):=" << pString(t) << std::endl;
             }
 
             // Ensure L is not NULL before accessing it
@@ -240,9 +254,9 @@ ideal Sec_leadSyz(ideal f0) {
 
       //  Debug output
     std::cout << "Final second-Leadsyz  size: " << IDELEMS(L) << std::endl;
-    // for (int k = 0; k < cc; k++) {
-    //     std::cout << "Generator " << k << ": " << pString((poly)L->m[k]) << std::endl;
-    // }
+    for (int k = 0; k < cc; k++) {
+        std::cout << "Generator " << k << ": " << pString((poly)L->m[k]) << std::endl;
+    }
 
     // // return (L);
     return L;
@@ -254,7 +268,7 @@ lists aLL_LEAD(ideal f) {
     // Allocate memory for the lists structure
     lists J = (lists)omAlloc0Bin(slists_bin);
     J->Init(2); // Initialize the list with two elements
-    ideal f_copy = f;
+    ideal f_copy = idCopy(f);
     //  for(int k=0; k<IDELEMS(f_copy);k++){
     //   std::cout << "Generators" <<""<<k << ": " << pString((poly)f_copy->m[k]) << std::endl;
     // }
@@ -266,10 +280,10 @@ lists aLL_LEAD(ideal f) {
     ideal F = leadSyz(f_copy);
     int g=IDELEMS(F);
    
-    for(int k=0; k<g;k++){
-      std::cout << "First_LeadSyz :at" <<""<<k << ": " << pString((poly)F->m[k]) << std::endl;
-    }
-    ideal F_copy =F;
+    // for(int k=0; k<g;k++){
+    //   std::cout << "First_LeadSyz :at" <<""<<k << ": " << pString((poly)F->m[k]) << std::endl;
+    // }
+    ideal F_copy =idCopy(F);
    
     J->m[1].rtyp = MODUL_CMD;  
     J->m[1].data = F_copy;
@@ -283,12 +297,22 @@ lists aLL_LEAD(ideal f) {
     for (int t = 0; t < n; t++) {
         // std::cout << "Processing variable: " << t + 1 << std::endl;
 
-        
+        // std::cout << "counter: " <<cc<< std::endl;
         ideal temp = Sec_leadSyz(F_copy);
+     std::cout << "F_copy_before: " << IDELEMS(F_copy) << std::endl;
+    for (int k = 0; k <IDELEMS(F_copy)  ; k++) {
+        std::cout << "Generator " << k << ": " << pString((poly)F_copy->m[k]) << std::endl;
+    }
         bool b=idIs0(temp);
        if(b==FALSE){
+         std::cout << "counter: " <<cc<< std::endl;
         // idDelete(&F_copy);
-         F_copy = temp; 
+    
+         F_copy = idCopy(temp); 
+               std::cout << "F_copy_after: " << IDELEMS(F_copy) << std::endl;
+    for (int k = 0; k <IDELEMS(F_copy)  ; k++) {
+        std::cout << "Generator " << k << ": " << pString((poly)F_copy->m[k]) << std::endl;
+    }
          temp=NULL;
        }
     else
@@ -305,7 +329,7 @@ lists aLL_LEAD(ideal f) {
 
             // Copy elements from the old list `J` to the new list `tmpL`
             for (int i = 0; i < cc; i++) {
-                //  std::cout << "variable:i " << i<< std::endl;
+                 std::cout << "variable:i " << i<< std::endl;
                 tmpL->m[i].rtyp = J->m[i].rtyp;
                 tmpL->m[i].data = J->m[i].data;
             }
@@ -318,75 +342,148 @@ lists aLL_LEAD(ideal f) {
         }
      std::cout << "Counter in the loop:= " << cc << std::endl;
         // Append the new syzygy ideal to the list
-        J->m[cc].rtyp = MODUL_CMD;
-        J->m[cc].data = F_copy;
-            cc++;
-        
-    }
-       for(int k=0;k<cc;k++){
+    //                std::cout << "F_copy_last: " << IDELEMS(F_copy) << std::endl;
+    // for (int k = 0; k <IDELEMS(F_copy)  ; k++) {
+    //     std::cout << "Generator " << k << ": " << pString((poly)F_copy->m[k]) << std::endl;
+    // }
+             for(int k=0;k<lSize(J)+1;k++){
       ideal l=(ideal)J->m[k].Data();
       for(int s=0; s <IDELEMS(l);s++){
-      std::cout << "Sch FRame as list " << k << ": " << pString((poly)l->m[s]) << std::endl;
+      std::cout << "J before " << k << ": " << pString((poly)l->m[s]) << std::endl;
       }
  
     }
+        J->m[cc].rtyp = MODUL_CMD;
+        J->m[cc].data = F_copy;
+            cc++;
+        for(int k=0;k<lSize(J)+1;k++){
+      ideal l=(ideal)J->m[k].Data();
+      for(int s=0; s <IDELEMS(l);s++){
+      std::cout << "J after counter" << k << ": " << pString((poly)l->m[s]) << std::endl;
+      }
+ 
+    }
+        
+    }
+    //    for(int k=0;k<cc;k++){
+    //   ideal l=(ideal)J->m[k].Data();
+    //   for(int s=0; s <IDELEMS(l);s++){
+    //   std::cout << "Sch FRame as list " << k << ": " << pString((poly)l->m[s]) << std::endl;
+    //   }
+ 
+    // }
     return J;
 }
 int main() {
     siInit((char *)"/home/santosh/singular-gpispace/spack/opt/spack/linux-ubuntu22.04-skylake/gcc-11.4.0/singular-4.4.0p2-syrkttc4im2j3tzob5jykruuxnushksj/lib/libSingular.so");
 
+    // Define the variables
+    char **n = (char**)omalloc(4 * sizeof(char*));
+    n[0] = omStrDup("w");
+    n[1] = omStrDup("x");
+    n[2] = omStrDup("y");
+    n[3] = omStrDup("z");
 
-// Define the ring with lexicographic ordering
-char **n = (char**)omalloc(6 * sizeof(char*));
-n[0] = omStrDup("u");
-n[1] = omStrDup("v");
-n[2] = omStrDup("w");
-n[3] = omStrDup("x");
-n[4] = omStrDup("y");
-n[5] = omStrDup("z");
+    rRingOrder_t* order=(rRingOrder_t*)omAlloc0(3*sizeof(rRingOrder_t));
+    order[0]=ringorder_dp;
+    order[1]=ringorder_c;
+    int* block0=(int*)omAlloc(3*sizeof(int));
+    block0[0]=1;
+    int* block1=(int*)omAlloc0(3*sizeof(int));
+    block1[0]=4;
 
-ring R = rDefault(0, 6, n);  // 0 means coefficient field ℚ
-rChangeCurrRing(R);
+    // Define the ring (dp,c) ordering
+    ring R = rDefault(0, 4, n,3,order,block0,block1);  // 0 means coefficient field is ℚ
+    rChangeCurrRing(R);
+    // Define the polynomials for the ideal
+    poly f1 = p_ISet(1, R);
+    pSetExp(f1, 1, 2); // w^2
 
-// Define the generators for the ideal
-poly f1 = p_ISet(1, R);  // u
-pSetExp(f1, 1, 1);  // Set u^1
-pSetm(f1);
+    pSetm(f1);
+    
 
-poly f2 = p_ISet(1, R);  // v
-pSetExp(f2, 2, 1);  // Set v^1
+   // Create the polynomial -1 x*z
+  poly p2 = p_ISet(-1, R);
+  pSetExp(p2, 2, 1);
+  pSetExp(p2, 4, 1);
+ 
+  pSetm(p2);
+
+   f1 = p_Add_q(f1, p2, R);
+  p2 = NULL;
+  pWrite(f1); //w^2-x*z
+
+
+
+// Define f2 = w*x - y*z
+poly f2 = p_ISet(1, R);
+pSetExp(f2, 1, 1); // w
+pSetExp(f2, 2, 1); // x
 pSetm(f2);
 
-poly f3 = p_ISet(1, R);  // w
-pSetExp(f3, 3, 1);  // Set w^1
+poly p3 = p_ISet(-1, R); // -y*z
+pSetExp(p3, 3, 1); // y
+pSetExp(p3, 4, 1); // z
+pSetm(p3);
+
+f2 = p_Add_q(f2, p3, R);
+ p3 = NULL;
+pWrite(f2);
+printf("\n");
+
+// Define f3 = x^2 - w*y
+poly f3 = p_ISet(1, R);
+pSetExp(f3, 2, 2); // x^2
 pSetm(f3);
 
-poly f4 = p_ISet(1, R);  // x
-pSetExp(f4, 4, 1);  // Set x^1
+poly p4 = p_ISet(-1, R); // -w*y
+pSetExp(p4, 1, 1); // w
+pSetExp(p4, 3, 1); // y
+pSetm(p4);
+
+f3 = p_Add_q(f3, p4, R);
+ p4 = NULL;
+pWrite(f3);
+printf("\n");
+
+// Define f4 = x*y - z^2
+poly f4 = p_ISet(1, R);
+pSetExp(f4, 2, 1); // x
+pSetExp(f4, 3, 1); // y
 pSetm(f4);
 
-poly f5 = p_ISet(1, R);  // y
-pSetExp(f5, 5, 1);  // Set y^1
+poly p5 = p_ISet(-1, R); // -z^2
+pSetExp(p5, 4, 2); // z^2
+pSetm(p5);
+
+f4 = p_Add_q(f4, p5, R);
+ p5 = NULL;
+pWrite(f4);
+printf("\n");
+
+// Define f5 = y^2 - w*z
+poly f5 = p_ISet(1, R);
+pSetExp(f5, 3, 2); // y^2
 pSetm(f5);
 
-poly f6 = p_ISet(1, R);  // z
-pSetExp(f6, 6, 1);  // Set z^1
-pSetm(f6);
+poly p6 = p_ISet(-1, R); // -w*z
+pSetExp(p6, 1, 1); // w
+pSetExp(p6, 4, 1); // z
+pSetm(p6);
 
-// Initialize the ideal J with 6 generators
-ideal J = idInit(6, 1);
+f5 = p_Add_q(f5, p6, R);
+ p6 = NULL;
+pWrite(f5);
+printf("\n");
+
+// Construct the ideal J
+ideal J = idInit(5, 1);
 J->m[0] = f1;
 J->m[1] = f2;
 J->m[2] = f3;
 J->m[3] = f4;
 J->m[4] = f5;
-J->m[5] = f6;
 
-// Print the generators of the ideal J
-for (int i = 0; i < 6; i++) {
-    pWrite(J->m[i]);
-    printf("\n");
-}
 
 
     // Run the aLL_LEAD function
@@ -394,7 +491,7 @@ for (int i = 0; i < 6; i++) {
 
     // Print the results
     std::cout << "Computed Syzygies: " << std::endl;
-    for (int i = 0; i < lSize(syzygyList); i++) {
+    for (int i = 0; i < lSize(syzygyList)+1; i++) {
         ideal result = (ideal)syzygyList->m[i].data;
         std::cout << "Level " << i << " Syzygies: " << std::endl;
         for (int j = 0; j < IDELEMS(result); j++) {
@@ -407,3 +504,4 @@ for (int i = 0; i < 6; i++) {
     rKill(R);
     return 0;
 }
+
