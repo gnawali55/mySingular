@@ -17,4 +17,6 @@ echo "Running the program with Valgrind..."
 valgrind --main-stacksize=16384 --tool=memcheck --leak-check=full --track-origins=yes --verbose ./simple_singular
 # valgrind  --leak-check=full --show-leak-kinds=all ./simple_singular
 gdb ./simple_singular
-run
+# Should us following commands
+# run
+# bt
